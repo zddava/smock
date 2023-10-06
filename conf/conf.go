@@ -8,6 +8,7 @@ import (
 
 var (
 	httpServer = flag.String("http-server", "http.server.conf", "http server config")
+	// TODO
 	tcpServer  = flag.String("tcp-server", "tcp.server.conf", "tcp server config")
 	udpServer  = flag.String("udp-server", "udp.server.conf", "udp server config")
 	tcpClient  = flag.String("tcp-client", "tcp.client.conf", "tcp client config")
@@ -34,8 +35,6 @@ func FileExists(file string) bool {
 }
 
 func ParseAndRun() {
-	flag.Parse()
-
 	configs := make([]any, 0)
 
 	if FileExists(*httpServer) {
@@ -45,6 +44,12 @@ func ParseAndRun() {
 		} else {
 			configs = append(configs, httpServer)
 		}
+	}
+
+	if len(configs) == 0 {
+		log.Printf("no conf file found, exiting... %s", "\n\n")
+		flag.Usage()
+		return
 	}
 
 	for _, config := range configs {
