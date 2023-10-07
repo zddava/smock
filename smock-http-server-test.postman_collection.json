@@ -1,0 +1,460 @@
+{
+	"info": {
+		"_postman_id": "fbe80217-1563-46ef-ac4e-c87b7e51a9f4",
+		"name": "smock-http-server-test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get",
+			"item": [
+				{
+					"name": "single",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/single",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"single"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list_all",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/list",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list_query_id_name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/list?id=1&name=name1",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"list"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "name",
+									"value": "name1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list_query_desc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/list?desc=desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"list"
+							],
+							"query": [
+								{
+									"key": "desc",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list_query_none",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/list?id=1&name=name2",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"list"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "name",
+									"value": "name2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list_path_id_name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/list/id/1/name/name1",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"list",
+								"id",
+								"1",
+								"name",
+								"name1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list_path_desc",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/list/desc/desc",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"list",
+								"desc",
+								"desc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list_path_none",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/get/list/id/3",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"get",
+								"list",
+								"id",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "post",
+			"item": [
+				{
+					"name": "write_single",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id\": \"1\", \"name\": \"n\", \"desc\":\"d\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/post/single/data",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"single",
+								"data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_single_back",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/post/single/data",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"single",
+								"data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "append_list",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id\": \"1\", \"name\": \"n\", \"desc\":\"d\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/post/list/data",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_list_back",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/post/list/data",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "del_list_data",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/post/list/data?id=1",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "append_list_with_id",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id1\": \"1\", \"name\": \"n\", \"desc\":\"d\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/post/list/data_with_id",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data_with_id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_list_with_id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/post/list/data_with_id",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data_with_id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "del_list_with_id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/post/list/data_with_id?id=1",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data_with_id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "append_list_with_ids",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"id1\": \"1\", \"id2\": \"2\", \"name\": \"n\", \"desc\":\"d\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/post/list/data_with_ids",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data_with_ids"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_list_with_id2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/post/list/data_with_ids",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data_with_ids"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "del_list_with_id2",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/post/list/data_with_ids?id1=1",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"list",
+								"data_with_ids"
+							],
+							"query": [
+								{
+									"key": "id1",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
