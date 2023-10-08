@@ -14,13 +14,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/get/single",
+							"raw": "{{server}}/get/single/",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"get",
-								"single"
+								"single",
+								""
 							]
 						}
 					},
@@ -50,7 +51,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/get/list?id=1&name=name1",
+							"raw": "{{server}}/get/list?id=1",
 							"host": [
 								"{{server}}"
 							],
@@ -62,10 +63,6 @@
 								{
 									"key": "id",
 									"value": "1"
-								},
-								{
-									"key": "name",
-									"value": "name1"
 								}
 							]
 						}
@@ -130,7 +127,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{server}}/get/list/id/1/name/name1",
+							"raw": "{{server}}/get/list/id/1",
 							"host": [
 								"{{server}}"
 							],
@@ -138,9 +135,7 @@
 								"get",
 								"list",
 								"id",
-								"1",
-								"name",
-								"name1"
+								"1"
 							]
 						}
 					},
@@ -317,7 +312,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"id1\": \"1\", \"name\": \"n\", \"desc\":\"d\"}",
+							"raw": "{\"id\": \"1\", \"name\": \"n\", \"desc\":\"d\"}",
 							"options": {
 								"raw": {
 									"language": "json"

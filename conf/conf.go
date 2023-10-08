@@ -38,11 +38,11 @@ func ParseAndRun() {
 	configs := make([]any, 0)
 
 	if FileExists(*httpServer) {
-		httpServer, err := parseHttpServer(*httpServer)
+		server, err := parseHttpServer(*httpServer)
 		if err != nil {
 			log.Printf("parse error: %s", err.Error())
 		} else {
-			configs = append(configs, httpServer)
+			configs = append(configs, server)
 		}
 	}
 
@@ -53,11 +53,11 @@ func ParseAndRun() {
 	}
 
 	for _, config := range configs {
-		switch config := config.(type) {
+		switch conf := config.(type) {
 		case ServerConfig:
-			config.Listen()
+			conf.Listen()
 		case ClientConfig:
-			config.Start()
+			conf.Start()
 		}
 	}
 

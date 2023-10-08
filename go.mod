@@ -5,7 +5,8 @@ go 1.21.1
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/zddava/goext v0.0.0-20231002162456-d0d52ec494b3
-	github.com/zddava/gowrap v0.0.0-20231006161908-51fbad9a2990
+	github.com/zddava/gowrap v0.0.0-20231008072145-615e6a94b130
+	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 )
 
 require (

@@ -10,11 +10,6 @@ import (
 
 var (
 	version = flag.Bool("v", false, "version")
-
-	Module  string
-	Version string
-	Date    string
-	Mode    string
 )
 
 func main() {

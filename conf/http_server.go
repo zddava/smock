@@ -5,22 +5,29 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/zddava/goext/enum"
+	"github.com/zddava/gowrap/consul"
 	"github.com/zddava/gowrap/json"
+	"golang.org/x/exp/slices"
 )
 
 const (
-	KEY_HTTP_PORT     = "port"
-	KEY_DYNAMIC_ROUTE = "dynamic_route"
-	KEY_HTTP_ROOT     = "db_root"
+	KEY_HTTP_PORT           = "port"
+	KEY_DYNAMIC_ROUTE       = "dynamic_route"
+	KEY_HTTP_ROOT           = "db_root"
+	KEY_CONSUL_API_BASE     = "consul_api_base"
+	KEY_CONSUL_SERVICE_NAME = "consul_service_name"
+	KEY_CONSUL_SERVICE_HOST = "consul_service_host"
 
 	DEFAULT_HTTP_PORT    = 8080
 	DEFAULT_DYNAMIC_POST = true
@@ -37,10 +44,13 @@ const (
 
 type (
 	HttpServer struct {
-		Port         int16
-		DynamicRoute bool
-		DBRoot       string
-		StaticRoutes RouteMap
+		Port              int16
+		DynamicRoute      bool
+		DBRoot            string
+		ConsulApiBase     string
+		ConsulServiceName string
+		ConsulServiceHost string
+		StaticRoutes      RouteMap
 	}
 
 	RouteMap    map[string]Route
@@ -48,32 +58,36 @@ type (
 	HTTP_ACTION enum.Enum
 
 	Route struct {
-		Path     string
-		Method   *HTTP_METHOD
-		Action   *HTTP_ACTION
-		File     string
-		Id       []string
-		Single   bool
-		Resolver HttpFileResolver
+		Path          string
+		Method        *HTTP_METHOD
+		Action        *HTTP_ACTION
+		File          string
+		Single        bool
+		Id            []string
+		Fields        []string
+		UniqueNotList bool
+		Resolver      HttpFileResolver
 	}
 
 	RouteInfoMap map[string]RouteInfo
 
 	RouteInfo struct {
-		Path   string   `toml:"path,omitempty"`
-		Method string   `toml:"method,omitempty"`
-		Action string   `toml:"action,omitempty"`
-		Format string   `toml:"format,omitempty"`
-		File   string   `toml:"file,omitempty"`
-		Single bool     `toml:"single,omitempty"`
-		Id     []string `toml:"id,omitempty"`
+		Path          string   `toml:"path,omitempty"`
+		Method        string   `toml:"method,omitempty"`
+		Action        string   `toml:"action,omitempty"`
+		Format        string   `toml:"format,omitempty"`
+		File          string   `toml:"file,omitempty"`
+		Single        bool     `toml:"single,omitempty"`
+		Id            []string `toml:"id,omitempty"`
+		Fields        []string `toml:"fields,omitempty"`
+		UniqueNotList bool     `toml:"unique_not_list,omitempty"`
 	}
 
 	HttpFileModel struct {
-		PostResponse map[string]any   `json:"post_response,omitempty"`
-		DelResponse  map[string]any   `json:"del_response,omitempty"`
-		Datum        map[string]any   `json:"datum,omitempty"`
-		Data         []map[string]any `json:"data,omitempty"`
+		PostResponse map[string]any `json:"post_response,omitempty"`
+		DelResponse  map[string]any `json:"del_response,omitempty"`
+		Datum        map[string]any `json:"datum,omitempty"`
+		Data         []any          `json:"data,omitempty"`
 	}
 
 	HttpFileType struct {
@@ -227,11 +241,17 @@ func (ri *RouteInfo) resolve(root string) (key string, route Route, err error) {
 		}
 	}
 
+	// single
+	route.Single = ri.Single
+
 	// id
 	route.Id = ri.Id
 
-	// single
-	route.Single = ri.Single
+	// fields
+	route.Fields = ri.Fields
+
+	// UniqueNotList
+	route.UniqueNotList = ri.UniqueNotList
 
 	return
 }
@@ -283,6 +303,18 @@ func parseHttpServer(configPath string) (*HttpServer, error) {
 	if dbRoot, ok := m[KEY_HTTP_ROOT]; ok {
 		config.DBRoot = dbRoot.(string)
 		delete(m, KEY_HTTP_ROOT)
+	}
+	if apiBase, ok := m[KEY_CONSUL_API_BASE]; ok {
+		config.ConsulApiBase = apiBase.(string)
+		delete(m, KEY_CONSUL_API_BASE)
+	}
+	if serviceName, ok := m[KEY_CONSUL_SERVICE_NAME]; ok {
+		config.ConsulServiceName = serviceName.(string)
+		delete(m, KEY_CONSUL_SERVICE_NAME)
+	}
+	if serviceHost, ok := m[KEY_CONSUL_SERVICE_HOST]; ok {
+		config.ConsulServiceHost = serviceHost.(string)
+		delete(m, KEY_CONSUL_SERVICE_HOST)
 	}
 
 	// parse static routes
@@ -347,24 +379,28 @@ func (route Route) WriteResponse(w http.ResponseWriter, data any) bool {
 	}
 }
 
-func (route Route) matchQuery(data []map[string]any, values url.Values) []map[string]any {
+func (route Route) matchQuery(data []any, values url.Values) []any {
 	if len(values) == 0 {
 		return data
 	}
 
-	matched := make([]map[string]any, 0)
+	matched := make([]any, 0)
 	for _, datum := range data {
+		datumValue := reflect.ValueOf(datum)
+		if datumValue.Kind() != reflect.Map {
+			continue
+		}
+
 		count := 0
 		for key, value := range values {
-			if fieldValue, ok := datum[key]; ok {
-				for _, val := range value {
-					switch fieldVal := fieldValue.(type) {
-					case string:
-						if fieldVal == val {
-							count++
-							break
-						}
-					}
+			mapValue := datumValue.MapIndex(reflect.ValueOf(key))
+			for _, val := range value {
+				if mapValue.Kind() == reflect.Interface || mapValue.Kind() == reflect.Pointer {
+					mapValue = mapValue.Elem()
+				}
+				if mapValue.String() == val {
+					count++
+					break
 				}
 			}
 		}
@@ -375,7 +411,37 @@ func (route Route) matchQuery(data []map[string]any, values url.Values) []map[st
 	}
 
 	return matched
+}
 
+func (route Route) project(data []any) []any {
+	if len(route.Fields) == 0 {
+		return data
+	}
+
+	projected := make([]any, 0)
+	for _, datum := range data {
+		datumValue := reflect.ValueOf(datum)
+		if datumValue.Kind() != reflect.Map {
+			projected = append(projected, datum)
+			continue
+		}
+
+		newDatum := make(map[string]any)
+		for _, key := range datumValue.MapKeys() {
+			keyVal := key
+			if key.Kind() == reflect.Interface || key.Kind() == reflect.Pointer {
+				keyVal = key.Elem()
+			}
+
+			if slices.Contains(route.Fields, keyVal.String()) {
+				newDatum[keyVal.String()] = datumValue.MapIndex(key).Interface()
+			}
+		}
+
+		projected = append(projected, newDatum)
+	}
+
+	return projected
 }
 
 func (route Route) ServRead(w http.ResponseWriter, r *http.Request, values url.Values) {
@@ -403,7 +469,13 @@ func (route Route) ServRead(w http.ResponseWriter, r *http.Request, values url.V
 	if route.Single {
 		route.WriteResponse(w, model.Datum)
 	} else {
-		route.WriteResponse(w, route.matchQuery(model.Data, values))
+		list := route.project(route.matchQuery(model.Data, values))
+		if route.UniqueNotList && len(list) == 1 {
+			route.WriteResponse(w, list[0])
+		} else {
+			route.WriteResponse(w, list)
+		}
+
 	}
 }
 
@@ -546,14 +618,19 @@ func (route Route) ServAppend(w http.ResponseWriter, r *http.Request, values url
 	// check if unique
 	if len(route.Id) > 0 {
 		for _, datum := range model.Data {
+			datumValue := reflect.ValueOf(datum)
+			if datumValue.Kind() != reflect.Map {
+				continue
+			}
+
 			unique := false
 			for _, key := range route.Id {
-				if value, ok := datum[key]; ok {
-					if newDatum[key] != value {
-						unique = true
-						break
-					}
-				} else {
+				mapValue := datumValue.MapIndex(reflect.ValueOf(key))
+				if mapValue.Kind() == reflect.Interface || mapValue.Kind() == reflect.Pointer {
+					mapValue = mapValue.Elem()
+				}
+
+				if mapValue.String() != newDatum[key] {
 					unique = true
 					break
 				}
@@ -586,20 +663,26 @@ func (route Route) ServDelete(w http.ResponseWriter, r *http.Request, values url
 		return
 	}
 
-	remaining := make([]map[string]any, 0)
+	remaining := make([]any, 0)
 
 	for _, datum := range model.Data {
+		datumValue := reflect.ValueOf(datum)
+		if datumValue.Kind() != reflect.Map {
+			remaining = append(remaining, datum)
+			continue
+		}
+
 		count := 0
 		for key, value := range values {
-			if fieldValue, ok := datum[key]; ok {
-				for _, val := range value {
-					switch fieldVal := fieldValue.(type) {
-					case string:
-						if fieldVal == val {
-							count++
-							break
-						}
-					}
+			mapValue := datumValue.MapIndex(reflect.ValueOf(key))
+			if mapValue.Kind() == reflect.Interface || mapValue.Kind() == reflect.Pointer {
+				mapValue = mapValue.Elem()
+			}
+
+			for _, val := range value {
+				if mapValue.String() == val {
+					count++
+					break
 				}
 			}
 		}
@@ -733,7 +816,25 @@ func (server *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (server *HttpServer) Listen() {
 	log.Printf("http server config: %v", server)
 
-	go http.ListenAndServe(":"+strconv.FormatInt(int64(server.Port), 10), server)
+	go func() {
+		var consulClient *consul.ConsulClient
+		var consulInstanceId string
+		if server.ConsulApiBase != "" && server.ConsulServiceName != "" {
+			consulClient = consul.NewClient(server.ConsulApiBase)
+			consulInstanceId = server.ConsulServiceName + "-" + strconv.Itoa(rand.Int())
+			serviceHost := server.ConsulServiceHost
+			if serviceHost == "" {
+				serviceHost = "127.0.0.1"
+			}
+			consulClient.Register(server.ConsulServiceName, consulInstanceId, "/health", serviceHost, int(server.Port), nil, nil)
+		}
+
+		http.ListenAndServe(":"+strconv.FormatInt(int64(server.Port), 10), server)
+
+		if server.ConsulApiBase != "" && server.ConsulServiceName != "" {
+			consulClient.Deregister(consulInstanceId)
+		}
+	}()
 
 	log.Printf("http server listen on :%d", server.Port)
 }

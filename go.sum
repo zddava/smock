@@ -18,7 +18,7 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/zddava/goext v0.0.0-20231002162456-d0d52ec494b3 h1:Pg0XyyFBHJYTOPRJG0BIwnvtUTdWdJXxlGLQPZOihnI=
 github.com/zddava/goext v0.0.0-20231002162456-d0d52ec494b3/go.mod h1:v4DpT/k6yX84x60j8pPDM0MLAI4QwY5Ofbw2gI2F92s=
-github.com/zddava/gowrap v0.0.0-20231006161908-51fbad9a2990 h1:ZH/eASEAnkuCYLQLyOFdmXUODSGWlowGFTDacKehNbM=
-github.com/zddava/gowrap v0.0.0-20231006161908-51fbad9a2990/go.mod h1:mXDVUKkwnoqS7GHMONKPZ48Z4yrhk6sqfiUt2hgwfuk=
+github.com/zddava/gowrap v0.0.0-20231008072145-615e6a94b130 h1:MGc7ptjqTc6bnUZGZBcKyMlKIQTlkV9rvzyLPwVMgx8=
+github.com/zddava/gowrap v0.0.0-20231008072145-615e6a94b130/go.mod h1:GZ2fpT9xntQ1z8dyMWcjtQDag3i6krfdq/tCWLTsLu4=
 golang.org/x/exp v0.0.0-20230905200255-921286631fa9 h1:GoHiUyI/Tp2nVkLI2mCxVkOjsbSXD66ic0XW0js0R9g=
 golang.org/x/exp v0.0.0-20230905200255-921286631fa9/go.mod h1:S2oDrQGGwySpoQPVqRShND87VCbxmc6bL1Yd2oYrm6k=
